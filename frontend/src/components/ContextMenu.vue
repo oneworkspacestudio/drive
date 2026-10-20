@@ -101,6 +101,12 @@
           :label="$t('files.newFolder')"
           @action="showNewDirPrompt"
         />
+        <template v-if="showCreateFileActions">
+          <action icon="description" label="Word document (.docx)" @action="createOfficeDocument('docx')" />
+          <action icon="table_view" label="Excel spreadsheet (.xlsx)" @action="createOfficeDocument('xlsx')" />
+          <action icon="slideshow" label="PowerPoint presentation (.pptx)" @action="createOfficeDocument('pptx')" />
+          <action icon="picture_as_pdf" label="PDF document (.pdf)" @action="createOfficeDocument('pdf')" />
+        </template>
         <action
           v-if="showCreateFileActions"
           icon="note_add"

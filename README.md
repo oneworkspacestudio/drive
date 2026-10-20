@@ -23,6 +23,11 @@ A self-hosted file manager with a Drive-style interface, browser Office editing,
 
 All file access uses FileBrowser's source configuration and permissions. Office documents and photos stay in their existing folders; browsing them does not import them into a second storage service.
 
+**Create Office files:** open **New** and choose **Word document (.docx)**,
+**Excel spreadsheet (.xlsx)**, **PowerPoint presentation (.pptx)** or
+**PDF document (.pdf)**. Name the file in the current Drive folder, then edit it
+in the browser. The existing autosave and history save back to that ordinary file.
+
 ## Choose how to install
 
 ### With One Workspace
