@@ -27,3 +27,8 @@ The normal backed-up owner53-to54 update installed this exact Drive EXE, with
 Photos bytes/version retained,24 apps and23 services healthy. The final combined
 suite55 adds a release-ordering repair; its publication remains pending.
 Preview processes/data were removed from C. Preserve the two unrelated previews.
+
+Manager 54-to-55 update is now complete and preserved all 24 app packages/versions,
+identity and paths; 23 services healthy and newest rollback verified. Drive 3 is
+installed unchanged. Its draft and full Workspace 55 release are still retrying
+large GitHub uploads after HTTP 408 failures; do not report them public yet.
