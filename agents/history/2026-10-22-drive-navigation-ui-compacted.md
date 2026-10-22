@@ -93,3 +93,29 @@ locally with the release version/source commit. Include matching source,
 licence/provenance assets, updater manifest and checksums. Actions remains
 disabled. README now uses a fresh synthetic screenshot filename to avoid stale
 image caching. Preserve both unrelated untracked preview files.
+
+## Published release receipt
+
+Source implementation committed and pushed to organisation master as
+`cf245f993c411c340284c7dd650c618b7d5485e9` (UI plus prior Photos fixes).
+Annotated tag `drive-v0.5.0-preview.4` points to that commit. Published Windows
+x64 prerelease on 2026-10-22:
+https://github.com/oneworkspacestudio/drive/releases/tag/drive-v0.5.0-preview.4
+
+Both executables rebuilt locally with preview4 versions; no GitHub Actions
+(repository Actions remains disabled). Published 15 assets including the portable
+ZIP, both EXEs, Photos defaults, source/provenance, licence notices, checksums
+and schema2/integration3 Workspace updater manifest. All uploaded asset sizes
+and GitHub SHA256 digests match local files. Portable ZIP CRC, duplicate-entry,
+embedded executable hash and updater package/member hash checks passed.
+
+Release Drive EXE SHA256:
+`fbe117d1d7b7f703439fdef92e38fb62b446b8f8aeec1b9a3e1bf6f77af7eaa6`.
+Photos EXE SHA256:
+`3938097fdad9e5ff4e7f4ec5d32d4a0da37600b5093bfb29a7cd808bef064c2c`.
+Release tooling/artifacts are on I: under tooling/drive-ui-20261022. Existing
+engine source pins and converter reproducibility limitation remain. Prior UI
+acceptance was not expanded to claim real eight-file Photos upload or full
+Office/auth regression coverage. Live installation remains on the tested local
+working-tree builds documented above; this publication did not restart it or
+publish a new Workspace manager bundle. Untracked preview files preserved.
