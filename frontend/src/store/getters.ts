@@ -314,7 +314,9 @@ export const getters = {
       return false
     }
     let visible = (state.showSidebar || getters.isStickySidebar())
-    if (getters.currentPromptName() && !getters.isStickySidebar()) {
+    const prompt = getters.currentPrompt();
+    const anchoredMenu = prompt?.name === 'ContextMenu' && prompt.props?.anchorId;
+    if (getters.currentPromptName() && !getters.isStickySidebar() && !anchoredMenu) {
       visible = false
     }
     if (previewViews.includes(cv) && !getters.previewPerms().disableHideSidebar) {
@@ -342,8 +344,10 @@ export const getters = {
     return sticky
   },
   showOverlay: () => {
+    const prompt = getters.currentPrompt();
+    const anchoredMenu = prompt?.name === 'ContextMenu' && prompt.props?.anchorId && state.prompts.length === 1;
     const hasPrompt =
-      getters.currentPrompt() !== null && getters.currentPromptName() !== 'more'
+      prompt !== null && getters.currentPromptName() !== 'more' && !anchoredMenu
     const showForSidebar =
       getters.isSidebarVisible() && !getters.isStickySidebar()
     return hasPrompt || showForSidebar || state.isSearchActive

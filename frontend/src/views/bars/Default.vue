@@ -1,10 +1,10 @@
 <template>
   <header v-if="!isOnlyOffice" :class="['flexbar']" :inert="overlayShown">
     <action
-      v-if="!disableNavButtons"
+      v-if="!disableNavButtons && (isMobile || !isListingView || !isStickySidebar)"
       class="nav-toggle-button"
       icon="close_back"
-      :label="$t('general.close')"
+      :label="isListingView ? 'Open navigation' : $t('general.close')"
       :disabled="isDisabledMultiAction"
       @action="multiAction"
     />
@@ -23,15 +23,7 @@
       />
     </div>
     <title v-if="!showSearch" class="topTitle">{{ getTopTitle }}</title>
-    <action
-      v-if="showHeaderSwitchView && !disableNavButtons"
-      class="menu-button"
-      :icon="viewIcon"
-      :label="viewModeActionLabel"
-      @action="switchView"
-      :disabled="viewModeChangeLocked"
-    />
-    <template v-else>
+    <template v-if="!showHeaderSwitchView">
       <action
         class="overflow-menu-button"
         :icon="iconName"
@@ -39,6 +31,22 @@
         @click="toggleOverflow"
       />
     </template>
+    <div class="drive-top-actions" ref="topActions" v-if="!isShare">
+      <button type="button" class="drive-icon-button drive-help-button" :aria-label="$t('general.help')" :title="$t('general.help')" @click="showHelp"><i class="material-symbols-outlined" aria-hidden="true">help</i></button>
+      <button v-if="settingsAllowed" type="button" class="drive-icon-button drive-settings-button" :aria-label="$t('general.settings')" :title="$t('general.settings')" @click="openSettings"><i class="material-symbols-outlined" aria-hidden="true">settings</i></button>
+      <a v-if="workspaceConnected" href="/" class="drive-icon-button drive-workspace-button" data-workspace-apps-trigger aria-label="Open Workspace apps" title="Workspace apps"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><circle v-for="point in appGridPoints" :key="point.join('-')" :cx="point[0]" :cy="point[1]" r="1.7"/></svg></a>
+      <button id="drive-account-button" type="button" class="drive-account-button" :title="displayName" :aria-label="displayName" aria-haspopup="menu" :aria-expanded="accountOpen" aria-controls="drive-account-menu" @click="toggleAccount">{{initials}}</button>
+      <div v-if="accountOpen" id="drive-account-menu" class="drive-account-menu" role="menu" :aria-label="$t('general.settings')">
+        <div class="drive-account-summary"><strong>{{displayName}}</strong><span v-if="user.username!==displayName">{{user.username}}</span></div>
+        <button v-if="settingsAllowed" type="button" role="menuitem" @click="openSettings"><i class="material-symbols-outlined" aria-hidden="true">person</i>{{ $t('general.settings') }}</button>
+        <button v-if="showInstall" type="button" role="menuitem" @click="installPwa"><i class="material-symbols-outlined" aria-hidden="true">download</i>{{ $t('pwa.install') }}</button>
+        <button v-if="darkModeTogglePossible" type="button" role="menuitemcheckbox" :aria-checked="!!user.darkMode" @click="toggleTheme"><i class="material-symbols-outlined" aria-hidden="true">dark_mode</i>{{ $t('index.toggleDark') }}</button>
+        <button v-if="!user.disableQuickToggles" type="button" role="menuitemcheckbox" :aria-checked="!!user.singleClick" @click="toggleClick"><i class="material-symbols-outlined" aria-hidden="true">ads_click</i>{{ $t('index.toggleClick') }}</button>
+        <button v-if="settingsAllowed" type="button" role="menuitem" @click="customizeNavigation"><i class="material-symbols-outlined" aria-hidden="true">tune</i>{{ $t('sidebar.customizeLinks') }}</button>
+        <button type="button" role="menuitem" @click="showHelp"><i class="material-symbols-outlined" aria-hidden="true">help</i>{{ $t('general.help') }}</button>
+        <button v-if="canLogout" type="button" role="menuitem" @click="logout"><i class="material-symbols-outlined" aria-hidden="true">logout</i>{{ $t('general.logout') }}</button>
+      </div>
+    </div>
   </header>
 </template>
 
@@ -49,6 +57,8 @@ import { getters, state, mutations } from "@/store";
 import Action from "@/components/Action.vue";
 import { globalVars } from "@/utils/constants";
 import { url } from "@/utils";
+import {logout as signOut} from '@/utils/auth';
+import {installAvailable,promptInstall} from '@/utils/pwaInstall';
 
 export default {
   name: "UnifiedHeader",
@@ -58,9 +68,21 @@ export default {
   data() {
     return {
       viewModes: ["list", "normal", "icons"],
+      accountOpen: false,
+      workspaceConnected: document.documentElement.dataset.workspaceNavigation === 'ready',
+      appGridPoints: [[5,5],[12,5],[19,5],[5,12],[12,12],[19,12],[5,19],[12,19],[19,19]],
     };
   },
   computed: {
+    user: () => state.user || {},
+    showInstall: () => installAvailable.value&&!globalVars.disablePWAInstall,
+    isMobile: () => getters.isMobile(),
+    isStickySidebar: () => getters.isStickySidebar(),
+    settingsAllowed: () => !state.user?.disableSettings,
+    canLogout: () => !globalVars.noAuth && state.user?.username && state.user.username!=='anonymous',
+    displayName() {return this.user.displayName || this.user.username || 'Account';},
+    initials() {return this.displayName.trim().split(/\s+/).slice(0,2).map(part=>part.slice(0,1)).join('').toUpperCase();},
+    darkModeTogglePossible: () => !['dark','light'].includes(state.shareInfo?.enforceDarkLightMode),
     driveLogo: () => driveLogo,
     getTopTitle() {
       if (state.route?.name === 'Photos') return 'Photos';
@@ -129,7 +151,9 @@ export default {
       return state.isSearchActive;
     },
     overlayShown() {
-      return state.isSearchActive || getters.currentPromptName() !== "";
+      const prompt=getters.currentPrompt();
+      const anchoredMenu=prompt?.name==='ContextMenu'&&prompt.props?.anchorId;
+      return state.isSearchActive || (!!getters.currentPromptName() && !anchoredMenu);
     },
     viewModeChangeLocked() {
       return getters.viewModeChangeLocked();
@@ -158,7 +182,29 @@ export default {
       return getters.isSettings();
     },
   },
+  mounted() {
+    this.workspaceObserver=new MutationObserver(()=>{this.workspaceConnected=document.documentElement.dataset.workspaceNavigation==='ready';});
+    this.workspaceObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-workspace-navigation']});
+    document.addEventListener('pointerdown',this.closeAccountOutside,true);
+    document.addEventListener('keydown',this.accountKeydown);
+  },
+  beforeUnmount() {
+    this.workspaceObserver?.disconnect();
+    document.removeEventListener('pointerdown',this.closeAccountOutside,true);
+    document.removeEventListener('keydown',this.accountKeydown);
+  },
+  watch: {$route(){this.accountOpen=false;}},
   methods: {
+    toggleAccount(){this.accountOpen=!this.accountOpen;if(this.accountOpen)this.$nextTick(()=>document.querySelector('#drive-account-menu button')?.focus());},
+    closeAccountOutside(event){if(!this.$refs.topActions?.contains(event.target))this.accountOpen=false;},
+    accountKeydown(event){if(event.key==='Escape'&&this.accountOpen){event.preventDefault();this.accountOpen=false;document.getElementById('drive-account-button')?.focus();}},
+    showHelp(){this.accountOpen=false;mutations.closeHovers();mutations.showPrompt('help');},
+    openSettings(){this.accountOpen=false;mutations.closeHovers();mutations.setPreviousHistoryItem({name:state.req.name,source:state.req.source,path:state.req.path,isShare:getters.isShare()});void router.push('/settings');},
+    toggleTheme(){mutations.toggleDarkMode();},
+    async installPwa(){await promptInstall();this.accountOpen=false;},
+    toggleClick(){void mutations.updateCurrentUser({singleClick:!state.user.singleClick});},
+    customizeNavigation(){this.accountOpen=false;mutations.closeHovers();mutations.showPrompt('SidebarLinks');},
+    logout(){this.accountOpen=false;void signOut();},
     goHome() {
       void router.push("/");
     },

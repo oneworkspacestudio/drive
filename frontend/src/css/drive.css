@@ -283,6 +283,30 @@ header.flexbar .search-bar-container .material-symbols {
   box-shadow: 0 1px 2px rgb(60 64 67 / 12%);
 }
 
+/* Drive navigation: file locations at the side, app/account tools at the top. */
+header.flexbar .drive-brand{width:210px;min-width:140px;flex-shrink:0}
+header.flexbar .search-bar-container{margin:0;flex:1 1 auto;max-width:720px}
+.drive-top-actions{position:relative;display:flex;align-items:center;gap:4px;margin-left:auto;padding-left:12px;flex:none}
+.drive-top-actions .drive-icon-button{color:var(--textSecondary);text-decoration:none}
+.drive-top-actions .drive-icon-button i{font-size:24px}
+.drive-account-button{display:grid;place-items:center;width:38px;height:38px;min-width:38px;padding:0;border:0;border-radius:50%;margin-left:8px;background:var(--drive-selected);color:var(--drive-on-selected);font:600 15px/1 Arial,sans-serif;cursor:pointer}
+.drive-account-menu{position:absolute;right:0;top:calc(100% + 12px);z-index:1200;display:flex;flex-direction:column;min-width:280px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 90px);overflow:auto;padding:8px;background:var(--drive-surface);color:var(--textPrimary);border:1px solid var(--divider);border-radius:var(--drive-radius-lg);box-shadow:var(--drive-shadow-2)}
+.drive-account-summary{display:flex;flex-direction:column;gap:6px;padding:16px;border-bottom:1px solid var(--divider);margin-bottom:8px;overflow-wrap:anywhere}
+.drive-account-summary span{color:var(--textSecondary);font-size:12px}
+.drive-account-menu button{display:flex;align-items:center;gap:16px;min-height:44px;height:auto;padding:10px 12px;border:0;border-radius:var(--drive-radius-sm);background:transparent;color:var(--textPrimary);font:inherit;font-size:14px;text-align:left;white-space:normal;cursor:pointer}
+.drive-account-menu button:hover,.drive-account-menu button:focus-visible{background:var(--drive-hover)}
+.drive-account-menu button[aria-checked='true']{background:var(--drive-selected)}
+#sidebar .drive-home-link{display:flex;align-items:center;gap:16px;width:100%;margin:0 0 6px;padding:0 12px;border:0;background:transparent;color:var(--textPrimary);font:inherit;text-align:left;cursor:pointer}
+#sidebar .drive-home-link:hover{background:var(--drive-hover)}
+#sidebar .sidebar-links-content{margin-top:0}
+#sidebar .photos-sidebar-link>svg,#sidebar .photos-sidebar-link>img{width:24px;height:24px;flex:none}
+#sidebar .credits{padding:8px 12px;font-size:12px;color:var(--textSecondary)}
+#sidebar .credits span:empty{display:none}
+.listing-item[data-dir='true'] .image-preview>i:not(.overlay-icon),.listing-item .image-preview>.white-icons{color:var(--textSecondary)}
+
+@media (width <= 900px){header.flexbar .drive-brand{width:auto;min-width:100px}.drive-top-actions{gap:0;padding-left:4px}}
+@media (width <= 600px){header.flexbar .drive-brand{width:auto;min-width:0}.drive-top-actions .drive-help-button,.drive-top-actions .drive-settings-button{display:none}.drive-top-actions{padding-left:0}.drive-account-button{width:34px;height:34px;min-width:34px;margin-left:2px}.drive-top-actions .drive-workspace-button{width:36px;min-width:36px}.drive-account-menu{right:-4px}.drive-brand span{display:none}header.flexbar .search-bar-container{min-width:0;height:40px;padding:0 10px}.drive-top-actions .drive-icon-button{height:36px}}
+
 @media (width <= 768px) {
   header.flexbar {
     gap: 0.15rem;

@@ -3,9 +3,11 @@
     <div
       v-show="!isHidden && showShelf"
       id="shelf"
+      ref="shelf"
       :class="{ 'add-padding': addPadding }"
       :style="moveWithSidebar"
     >
+      <DriveToolbar v-if="showDriveToolbar"/>
       <breadcrumbs v-if="showBreadcrumbs" :base="isShare ? `/share/${shareHash}` : undefined" />
       <listing-header v-if="showListingHeader" :hasDuration="hasDuration" />
       <duplicate-finder-actions
@@ -23,6 +25,7 @@
 import Breadcrumbs from "@/components/files/Breadcrumbs.vue";
 import ListingHeader from "@/components/files/ListingHeader.vue";
 import DuplicateFinderActions from "@/components/tools/DuplicateFinderActions.vue";
+import DriveToolbar from '@/components/files/DriveToolbar.vue';
 import { getters, state } from "@/store";
 import { eventBus } from "@/store/eventBus";
 
@@ -32,6 +35,7 @@ export default {
     Breadcrumbs,
     ListingHeader,
     DuplicateFinderActions,
+    DriveToolbar,
   },
   data() {
     return {
@@ -45,6 +49,7 @@ export default {
     };
   },
   computed: {
+    showDriveToolbar(){return getters.currentView()==='listingView'&&!getters.isShare();},
     addPadding() {
       return getters.isStickySidebar() || getters.isShare();
     },
@@ -52,7 +57,7 @@ export default {
       if (state.loading.length > 0) {
         return false;
       }
-      return this.showBreadcrumbs || this.showListingHeader || this.showDuplicateFinderActions;
+      return this.showDriveToolbar || this.showBreadcrumbs || this.showListingHeader || this.showDuplicateFinderActions;
     },
     showBreadcrumbs() {
       return getters.showBreadCrumbs();
@@ -98,9 +103,15 @@ export default {
     eventBus.on('duplicateFinderSelectionChanged', this.handleDuplicateFinderSelectionChanged);
     eventBus.on('duplicateFinderDeletingChanged', this.handleDuplicateFinderDeletingChanged);
     await this.$nextTick();
+    this.shelfObserver=new ResizeObserver(()=>{
+      const height=this.$refs.shelf?.getBoundingClientRect().height||0;
+      document.documentElement.style.setProperty('--drive-shelf-height',`${height}px`);
+    });
+    if(this.$refs.shelf)this.shelfObserver.observe(this.$refs.shelf);
     this.attachScrollListener();
   },
   beforeUnmount() {
+    this.shelfObserver?.disconnect();
     this.detachScrollListener();
 
     // Clean up event bus listeners

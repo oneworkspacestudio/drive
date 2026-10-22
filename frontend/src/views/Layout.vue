@@ -147,7 +147,9 @@ export default {
       return getters.showOverlay();
     },
     floatingSidebar() {
-      return getters.isSidebarVisible() && !getters.isStickySidebar() && !state.prompts.length && !state.isSearchActive;
+      const prompt=getters.currentPrompt();
+      const anchoredMenu=prompt?.name==='ContextMenu'&&prompt.props?.anchorId;
+      return getters.isSidebarVisible() && !getters.isStickySidebar() && (!state.prompts.length||anchoredMenu) && !state.isSearchActive;
     },
     overlayOverPrompt() {
       if (getters.currentPromptName() !== "ContextMenu") return false;

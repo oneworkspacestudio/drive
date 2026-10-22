@@ -420,6 +420,7 @@ export default {
       };
     },
     containerStyles() {
+      if(!getters.isShare())return {'padding-top':'var(--drive-shelf-height, 112px)'};
       // Dynamic padding-top: applied to the entire container (loading spinner + listing items)
       const isEmpty = this.numDirs + this.numFiles + this.numPinned === 0;
       const isRootPath = state.req.path === '/' || !state.req.path;

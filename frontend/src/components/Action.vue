@@ -33,7 +33,8 @@
     class="action no-select"
     @click="action"
   >
-    <i :class="iconClass">{{ icon }}</i>
+    <DriveDocumentIcon v-if="documentType" :type="documentType"/>
+    <i v-else :class="iconClass" aria-hidden="true">{{ icon }}</i>
     <span>{{ label }}</span>
     <span v-if="counter > 0" class="counter">{{ counter }}</span>
   </button>
@@ -41,10 +42,12 @@
 
 <script>
 import { getters, mutations, state } from "@/store";
+import DriveDocumentIcon from "./files/DriveDocumentIcon.vue";
 
 export default {
   name: "action",
-  props: ["icon", "label", "counter", "show", "isDisabled", "customIconClass"],
+  components: {DriveDocumentIcon},
+  props: ["icon", "label", "counter", "show", "isDisabled", "customIconClass", "documentType"],
   computed: {
     req() {
       return state.req;
@@ -63,6 +66,10 @@ export default {
         return this.customIconClass;
       }
       const outlinedIcons = [
+        'create_new_folder',
+        'upload_file',
+        'drive_folder_upload',
+        'note_add',
         'table_rows_narrow',
         'content_copy',
         'file_copy',

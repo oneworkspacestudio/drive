@@ -11,7 +11,10 @@
       v-if="showContext"
       :style="centered ? {} : { top: `${posY}px`, left: `${posX}px` }"
       class="no-select floating-window"
-      :class="{ 'centered': centered }"
+      :class="{ 'centered': centered, 'drive-new-menu': !!anchorId }"
+      :role="anchorId ? 'menu' : undefined"
+      :aria-label="anchorId ? $t('general.new', {suffix:''}) : undefined"
+      @keydown="onMenuKeydown"
       :key="showNewFileTemplate ? 'template-mode' : (showCreate ? 'create-mode' : 'normal-mode')"
     >
       <template v-if="showNewFileTemplate">
@@ -40,21 +43,25 @@
         />
         <action
           icon="description"
+          document-type="docx"
           :label="`${$t('files.newFile')} (DOCX)`"
           @action="createOfficeDocument('docx')"
         />
         <action
           icon="table_view"
+          document-type="xlsx"
           :label="`${$t('files.newFile')} (XLSX)`"
           @action="createOfficeDocument('xlsx')"
         />
         <action
           icon="slideshow"
+          document-type="pptx"
           :label="`${$t('files.newFile')} (PPTX)`"
           @action="createOfficeDocument('pptx')"
         />
         <action
           icon="picture_as_pdf"
+          document-type="pdf"
           :label="`${$t('files.newFile')} (PDF)`"
           @action="createOfficeDocument('pdf')"
         />
@@ -102,22 +109,20 @@
           @action="showNewDirPrompt"
         />
         <template v-if="showCreateFileActions">
-          <action icon="description" label="Word document (.docx)" @action="createOfficeDocument('docx')" />
-          <action icon="table_view" label="Excel spreadsheet (.xlsx)" @action="createOfficeDocument('xlsx')" />
-          <action icon="slideshow" label="PowerPoint presentation (.pptx)" @action="createOfficeDocument('pptx')" />
-          <action icon="picture_as_pdf" label="PDF document (.pdf)" @action="createOfficeDocument('pdf')" />
+          <hr class="divider"/>
+          <action icon="upload_file" label="File upload" @action="showUploadPicker(false)"/>
+          <action icon="drive_folder_upload" label="Folder upload" @action="showUploadPicker(true)"/>
+          <hr class="divider"/>
+          <action icon="description" document-type="docx" label="Word document (.docx)" @action="createOfficeDocument('docx')" />
+          <action icon="table_view" document-type="xlsx" label="Excel spreadsheet (.xlsx)" @action="createOfficeDocument('xlsx')" />
+          <action icon="slideshow" document-type="pptx" label="PowerPoint presentation (.pptx)" @action="createOfficeDocument('pptx')" />
+          <action icon="picture_as_pdf" document-type="pdf" label="PDF document (.pdf)" @action="createOfficeDocument('pdf')" />
         </template>
         <action
           v-if="showCreateFileActions"
           icon="note_add"
           :label="$t('files.newFile')"
           @action="onNewFileClick"
-        />
-        <action
-          v-if="showCreateFileActions"
-          icon="file_upload"
-          :label="$t('general.upload')"
-          @action="showUploadPrompt"
         />
         <action
           v-if="showQuotaAction"
@@ -304,6 +309,7 @@ export default {
     };
   },
   props: {
+    anchorId: {type: String, default: ''},
     createOnly: {
       type: Boolean,
       default: false,
@@ -450,6 +456,7 @@ export default {
       return item && isArchivePath(item.path || item.from || item.name);
     },
     showShareAction() {
+      if(this.anchorId)return false;
       if (this.showLimitedOptions) return false;
       return this.selectedCount <= 1 && this.showShare;
     },
@@ -519,6 +526,7 @@ export default {
       return this.showCreateToggle || this.selectedCount > 0;
     },
     showSelectMultiple() {
+      if(this.anchorId)return false;
       if (this.showLimitedOptions) return false;
       if (this.isMultiple || this.isSearchActive) {
         return false;
@@ -587,6 +595,7 @@ export default {
       return getters.currentPromptName() === "OverflowMenu";
     },
     showAccess() {
+      if(this.anchorId)return false;
       if (this.showLimitedOptions) return false;
       if (getters.isShare()) {
         return false;
@@ -597,6 +606,7 @@ export default {
       return getters.isAdmin() && this.showCreate;
     },
     showQuotaAction() {
+      if(this.anchorId)return false;
       if (this.showLimitedOptions) return false;
       if (getters.isShare()) return false;
       if (!getters.isAdmin()) return false;
@@ -634,6 +644,7 @@ export default {
       return state.user;
     },
     centered() {
+      if(this.anchorId)return false;
       return this.showCentered || this.isMobileDevice || !this.posX || !this.posY;
     },
     isMobileDevice() {
@@ -645,6 +656,18 @@ export default {
     currentPrompt() {
       return getters.currentPrompt();
     },
+  },
+  mounted() {
+    document.addEventListener('pointerdown',this.onOutsidePointer,true);
+    document.addEventListener('keydown',this.onEscape,true);
+    window.addEventListener('resize',this.positionAnchoredMenu);
+    window.addEventListener('scroll',this.positionAnchoredMenu,true);
+  },
+  beforeUnmount() {
+    document.removeEventListener('pointerdown',this.onOutsidePointer,true);
+    document.removeEventListener('keydown',this.onEscape,true);
+    window.removeEventListener('resize',this.positionAnchoredMenu);
+    window.removeEventListener('scroll',this.positionAnchoredMenu,true);
   },
   watch: {
     hasOverflowItems: {
@@ -665,6 +688,10 @@ export default {
             this.initializeCreateState();
             this.createStateInitialized = true;
           }
+          if(this.anchorId)this.$nextTick(()=>{
+            this.positionAnchoredMenu();
+            this.$refs.contextMenu?.querySelector('button:not([disabled])')?.focus();
+          });
         } else {
           // Reset the flag when menu is hidden so it reinitializes next time
           this.createStateInitialized = false;
@@ -675,6 +702,48 @@ export default {
     }
   },
   methods: {
+    dismissAnchoredMenu() {
+      const sidebarOpen=state.showSidebar;
+      mutations.closeTopPrompt(getters.currentPrompt()?.id);
+      mutations.setSidebarVisible(sidebarOpen);
+    },
+    positionAnchoredMenu() {
+      if(!this.anchorId||!this.showContext)return;
+      const anchor=document.getElementById(this.anchorId),menu=this.$refs.contextMenu;
+      if(!anchor||!menu)return;
+      const rect=anchor.getBoundingClientRect(),margin=8;
+      const width=window.visualViewport?.width||window.innerWidth,height=window.visualViewport?.height||window.innerHeight;
+      if(rect.right<=0||rect.bottom<=0||rect.top>=height){this.dismissAnchoredMenu();return;}
+      this.posX=Math.max(margin,Math.min(rect.left,width-menu.offsetWidth-margin));
+      this.posY=Math.max(margin,rect.bottom+4);
+      menu.style.maxHeight=`${Math.max(0,height-this.posY-margin)}px`;
+      for(const button of menu.querySelectorAll('button'))button.setAttribute('role','menuitem');
+    },
+    onOutsidePointer(event) {
+      if(!this.anchorId||!this.showContext)return;
+      if(this.$refs.contextMenu?.contains(event.target)||document.getElementById(this.anchorId)?.contains(event.target))return;
+      this.dismissAnchoredMenu();
+    },
+    onEscape(event) {
+      if(!this.anchorId||!this.showContext||event.key!=='Escape')return;
+      event.preventDefault();event.stopImmediatePropagation();this.dismissAnchoredMenu();
+      document.getElementById(this.anchorId)?.focus();
+    },
+    onMenuKeydown(event) {
+      if(!this.anchorId)return;
+      if(event.key==='Tab'){this.dismissAnchoredMenu();return;}
+      if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+      event.preventDefault();event.stopPropagation();
+      const buttons=[...this.$refs.contextMenu.querySelectorAll('button:not([disabled])')];
+      const index=buttons.indexOf(document.activeElement);
+      const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;
+      buttons[next]?.focus();
+    },
+    showUploadPicker(folder) {
+      const input=document.getElementById(folder?'upload-folder-input':'upload-input');
+      if(!input){this.showUploadPrompt();return;}
+      mutations.closeHovers();input.click();
+    },
     openStudio(){const item=this.firstSelected;if(!item)return;mutations.closeHovers();this.$router.push({path:'/studio',query:{source:item.source||state.req.source,path:item.path}});},
     openStudioPreview(){mutations.closeHovers();this.$router.push({path:'/studio',query:{source:state.req.source,path:state.req.path}});},
     showInfoPrompt() {
@@ -749,10 +818,12 @@ export default {
     },
     // Animation methods
     beforeEnter(el) {
+      if(this.anchorId)return;
       this.isAnimating = true;
       expandBeforeEnter(el);
     },
     async enter(el, done) {
+      if(this.anchorId){await this.$nextTick();this.positionAnchoredMenu();done();return;}
       const BUFFER = 8;
       await this.$nextTick();
       expandEnter(el, () => {
@@ -786,6 +857,7 @@ export default {
       });
     },
     leave(el, done) {
+      if(el.classList.contains('drive-new-menu')){done();return;}
       this.isAnimating = true;
       expandLeave(el, () => {
         this.isAnimating = false;
@@ -833,6 +905,7 @@ export default {
       });
     },
     setPositions() {
+      if(this.anchorId){this.positionAnchoredMenu();return;}
       const contextProps = getters.currentPrompt().props;
       this.posX = contextProps.posX;
       this.posY = contextProps.posY;
@@ -1135,6 +1208,13 @@ export default {
   left: 50% !important;
   transform: translate(-50%, -50%);
 }
+
+#context-menu.drive-new-menu{position:fixed!important;z-index:1100;transform:none!important;width:320px;min-width:0;max-width:calc(100vw - 16px);padding:8px 0;justify-content:flex-start;overflow-y:auto;background:var(--drive-surface);border:1px solid var(--divider);border-radius:var(--drive-radius-sm);box-shadow:var(--drive-shadow-2)}
+#context-menu.drive-new-menu .action{min-height:44px;padding:8px 20px;gap:18px;border-radius:0;font-size:14px;color:var(--textPrimary)}
+#context-menu.drive-new-menu .action :deep(span){display:block;text-align:left;white-space:normal}
+#context-menu.drive-new-menu .action :deep(i){width:24px;height:24px;padding:0;line-height:24px;font-size:22px}
+#context-menu.drive-new-menu .action:hover,#context-menu.drive-new-menu .action:focus-visible{background:var(--drive-surface-high)}
+#context-menu.drive-new-menu .divider{margin:8px 0;border-color:var(--divider)}
 
 .selected-count-header {
   border-radius: var(--borderRadius);

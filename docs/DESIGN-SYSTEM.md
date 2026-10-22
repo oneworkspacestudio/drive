@@ -25,6 +25,31 @@ No Google assets, fonts or scripts are downloaded at runtime.
 Public references: [Material colour roles](https://m3.material.io/styles/color/the-color-system)
 and [Material Web button tokens](https://github.com/material-components/material-web/blob/main/docs/components/button.md).
 
+## Drive navigation
+
+The sidebar contains New, Home, file locations and app links. Account, Help,
+Settings, appearance and installation controls belong in the top bar or its
+account menu. List/grid and folder information belong above the file list.
+Hide the desktop menu toggle when navigation is pinned; keep the working mobile
+navigation toggle. The content offset is measured from the actual folder toolbar
+height, including wrapped or nested breadcrumbs.
+
+New opens a dropdown below its button, without a desktop modal backdrop. It
+contains creation actions, file/folder upload and supported Office formats.
+Storage administration, sharing and selection actions remain in their existing
+context menus. Escape returns focus to New; arrow keys move between choices,
+Tab or an outside click dismisses the menu. Dismissing New preserves an open
+mobile navigation drawer. All menus fit and scroll within the current viewport.
+
+Document icons are original SVGs using the shared `--drive-document-*` tokens:
+blue for documents, green for spreadsheets, yellow for presentations and red for
+PDF. Keep their shape, spacing and colours consistent in the creation menus.
+
+When Workspace navigation is present, the top-bar app grid uses the existing
+`data-workspace-apps-trigger` integration. The shared shell hides its floating
+launcher, preventing it from covering Drive content. Standalone Drive hides this
+control when Workspace is unavailable.
+
 ## Files
 
 | File | Responsibility |

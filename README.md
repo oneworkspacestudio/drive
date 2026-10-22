@@ -8,9 +8,9 @@ A self-hosted file manager with a Drive-style interface, browser Office editing,
 
 [Download Windows previews](https://github.com/oneworkspacestudio/drive/releases) · [MyAccounts setup](MYACCOUNTS.md) · [Office](OFFICE.md) · [Photos](PHOTOS.md) · [Suite installer](https://github.com/oneworkspacestudio/one-workspace)
 
-![Current My Drive interface with shared controls and compact sidebar selection](docs/images/drive-current.png)
+![My Drive with the anchored New dropdown, document icons and top toolbar](docs/images/drive-navigation-20261022.png)
 
-*Earlier interface preview with sample files. The current project logos are shown above and in the app table; screenshots may retain older branding. Check the release notes for the included app versions.*
+*Current Drive layout with synthetic sample files: anchored New menu, shared document colours, top controls and Workspace app picker.*
 
 ## Your files, with more ways to work
 
@@ -44,7 +44,7 @@ Download a preview from this fork's [releases](https://github.com/oneworkspacest
 
 FileBrowser can use its normal authentication independently of MyAccounts. To connect shared sign-in, follow [MYACCOUNTS.md](MYACCOUNTS.md). Keep the OIDC client secret in a protected launcher environment.
 
-**Release coverage:** the [v0.5.0 preview](https://github.com/oneworkspacestudio/drive/releases) packages the shared Drive design, Office/version history, Photos and Image Studio, with improved upload confirmation and recovery. Check the release notes for package contents and current limits.
+**Release coverage:** [v0.5.0 preview 4](https://github.com/oneworkspacestudio/drive/releases/tag/drive-v0.5.0-preview.4) includes the new navigation and dropdown, Office/version history, Photos and Image Studio. Photos starts in a writable library and shows overall batch progress with upload recovery controls. Check the release notes for package contents and current limits.
 
 ## Office and Photos previews
 

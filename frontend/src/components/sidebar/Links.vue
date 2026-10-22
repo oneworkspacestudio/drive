@@ -2,7 +2,7 @@
   <div class="sidebar-links card">
 
     <!-- Links section header -->
-    <div class="sidebar-links-header"
+    <div v-if="isShare" class="sidebar-links-header"
       :class="{ 'with-top-spacing': isShare && !disableShareCard }">
       <i :class="{ 'disabled': !isLoggedIn }"
         aria-label="Navigate Home"
@@ -33,7 +33,8 @@
     <!-- Scrollable Content Area -->
     <div class="sidebar-links-content">
       <!-- Links Mode -->
-      <template v-if="mode === 'links'">
+      <template v-if="!isShare || mode === 'links'">
+        <button v-if="!isShare" type="button" class="drive-home-link sidebar-link-button" @click="goHome"><i class="material-symbols-outlined" aria-hidden="true">home</i><span>{{ $t('general.home') }}</span></button>
         <!-- Share Info section - shown when viewing a share -->
         <div v-if="isShare && !disableShareCard" class="share-info-section">
           <ShareInfo :hash="hash" :token="token" :sub-path="subPath" />
@@ -63,15 +64,7 @@
                 <!-- Show custom icon if user has set one -->
                 <i v-if="link.icon" :class="`${getIconClass(link.icon)} link-icon`">{{ link.icon }}</i>
                 <!-- Otherwise show animated status indicator -->
-                <svg v-else-if="isLinkAccessible(link)" class="realtime-pulse" :class="{
-                  active: realtimeActive,
-                  danger: sourceInfo[link.sourceName]?.status !== 'indexing' && sourceInfo[link.sourceName]?.status !== 'ready',
-                  warning: sourceInfo[link.sourceName]?.status === 'indexing',
-                  ready: sourceInfo[link.sourceName]?.status === 'ready',
-                }">
-                  <circle class="center" cx="50%" cy="50%" r="7px"></circle>
-                  <circle class="pulse" cx="50%" cy="50%" r="10px"></circle>
-                </svg>
+                <i v-else-if="isLinkAccessible(link)" class="material-symbols-outlined link-icon" aria-hidden="true">{{sourceIcon(link)}}</i>
                 <HelpTooltipIcon
                   v-else
                   icon="warning"
@@ -307,6 +300,7 @@ export default {
     hideInteractiveTooltip(true);
   },
   methods: {
+    sourceIcon(link){return link.sourceName==='My Drive'?'hard_drive':'folder';},
     isSourceCategory(category) {
       return isSourceSidebarCategory(category);
     },

@@ -4,13 +4,13 @@
     <transition v-if="shareInfo.shareType !== 'upload'" name="expand" @before-enter="beforeEnter" @enter="enter"
       @leave="leave">
       <div v-if="!hideSidebarFileActions && isListingView" class="card-wrapper">
-        <button type="button" @click="openContextMenu" :aria-label="$t('general.new', { suffix: '' })" data-testid="file-actions-button" class="action file-actions">
+        <button id="drive-new-button" type="button" @click="openContextMenu" :aria-label="$t('general.new', { suffix: '' })" aria-haspopup="menu" :aria-expanded="newMenuOpen" aria-controls="context-menu" data-testid="file-actions-button" class="action file-actions">
           <i class="material-symbols">add</i>
           <span>{{ $t("general.new", { suffix: "" }) }}</span>
         </button>
       </div>
     </transition>
-    <div v-if="isDataLoaded && shouldShowLogin" class="card-wrapper user-card" :class="{ 'extra-padding': !disableQuickToggles }">
+    <div v-if="isShare && isDataLoaded && shouldShowLogin" class="card-wrapper user-card" :class="{ 'extra-padding': !disableQuickToggles }">
       <div v-if="settingsAllowed" class="inner-card user-card__profile">
         <a href="/settings#profile-main" class="person-button action button"
           @click.prevent="navigateTo('/settings', '#profile-main')"
@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <div v-if="!disableQuickToggles" class="card-wrapper" @mouseleave="hideTooltip">
+    <div v-if="isShare && !disableQuickToggles" class="card-wrapper" @mouseleave="hideTooltip">
       <div class="quick-toggles" :class="{ 'extra-padding': hasCreateOptions }">
         <button type="button" class="drive-icon-button" :aria-label="$t('index.toggleClick')" :aria-pressed="!!user?.singleClick" :class="{ active: user?.singleClick }" @click="toggleClick"
           @mouseenter="showTooltip($event, $t('index.toggleClick'))" @mouseleave="hideTooltip" v-if="!isInvalidShare">
@@ -97,6 +97,7 @@ export default {
   },
   computed: {
     studioLogo: () => studioLogo,
+    newMenuOpen: () => getters.currentPromptName()==='ContextMenu' && getters.currentPrompt()?.props?.anchorId==='drive-new-button',
     // Check if data is loaded before showing user info
     isDataLoaded() {
       if (getters.isShare()) {
@@ -110,8 +111,8 @@ export default {
       if (getters.isShare()) {
         return state.shareInfo?.allowCreate === true
       }
-      const global = getters.globalPermissions();
-      return getters.sourcePermissions().create || global.share || global.admin;
+      const source=state.req?.source||state.sources.current;
+      return getters.sourcePermissions().create && !state.sources.info?.[source]?.readOnly;
     },
     shareInfo: () => state.shareInfo,
     disableQuickToggles: () => state.user?.disableQuickToggles,
@@ -153,11 +154,12 @@ export default {
   },
   methods: {
     openContextMenu() {
+      if(this.newMenuOpen){const sidebarOpen=state.showSidebar;mutations.closeTopPrompt(getters.currentPrompt()?.id);mutations.setSidebarVisible(sidebarOpen);return;}
       mutations.resetSelected();
       mutations.showPrompt({
         name: "ContextMenu",
         props: {
-          showCentered: true,
+          anchorId: 'drive-new-button',
           createOnly: true,
         },
       });

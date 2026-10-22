@@ -13,28 +13,15 @@
         class="drive-icon-button"
       ><i class="material-symbols" aria-hidden="true">close</i></button>
     </div>
-    <div v-if="showPwaInstall" class="release-banner">
-      <button type="button" class="drive-button drive-button--text" @click="installPwa">{{ $t("pwa.install") }}</button>
-      <button type="button" class="drive-icon-button" @click="dismissPwaInstall" :aria-label="$t('general.close')"><i class="material-symbols" aria-hidden="true">close</i></button>
-    </div>
     <SidebarSettings v-if="isSettings"></SidebarSettings>
     <SidebarGeneral v-if="!isSettings"></SidebarGeneral>
     <div class="buffer"></div>
     <div v-if="!isSettings" class="credits">
       <span v-for="item in externalLinks" :key="item.title">
         <a
-          v-if="item.url === 'help prompt'"
-          href="#help"
-          @click.prevent="help"
-          :title="$t('general.help')"
-          >{{ $t("general.help") }}</a
-        >
-        <a v-else :href="item.url" target="_blank" :title="item.title">{{
+          v-if="item.url !== 'help prompt'" :href="item.url" target="_blank" :title="item.title">{{
           item.text
         }}</a>
-      </span>
-      <span v-if="name !== ''">
-        <h4 style="margin: 0">{{ name }}</h4>
       </span>
     </div>
     <!-- Resize Handle -->
@@ -114,7 +101,11 @@ export default {
     isSettings: () => getters.isSettings(),
     isMobile: () => getters.isMobile(),
     active: () => getters.isSidebarVisible(),
-    behindOverlay: () => state.isSearchActive || (state.prompts && state.prompts.length > 0),
+    behindOverlay() {
+      const prompt=getters.currentPrompt();
+      const anchoredMenu=prompt?.name==='ContextMenu'&&prompt.props?.anchorId;
+      return state.isSearchActive || (state.prompts?.length>0&&!anchoredMenu);
+    },
     sidebarWidth: () => getters.sidebarWidth(),
     shouldShow() {
       return (

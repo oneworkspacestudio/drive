@@ -63,8 +63,18 @@ Media IDs derive from source and scope-relative path; a rename changes the ID. C
 ## Interrupted uploads
 
 Gateway failures are shown as short messages with a recovery action, rather than
-raw HTML. Photos shows byte-upload progress, then waits for the server to confirm
-the save. Keep the Photos page open after a failure and choose **Retry remaining
+raw HTML. Photos starts in a writable library (preferring My Drive); app-owned
+originals libraries remain read-only and their Upload buttons are disabled.
+The progress bar covers the whole batch, with a separate current-file percentage,
+saved-file count, elapsed time and explicit server-confirmation phase. Only
+confirmed saves count as completed. **Stop upload** retains remaining files for
+retry while the page stays open.
+
+Metadata and library requests time out after 30 seconds. A transfer with no
+progress for 60 seconds, or no save confirmation for two minutes, stops with
+recovery guidance. Completion/errors appear before refreshing the library, so a
+slow refresh cannot leave an upload looking active. Keep the Photos page open
+after a failure and choose **Retry remaining
 uploads**. The selected files, upload session and last confirmed chunk offset
 are retained in memory; already confirmed files are omitted from the retry.
 Refreshing the library also shows files completed before the interruption.
