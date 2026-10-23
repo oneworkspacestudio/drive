@@ -44,7 +44,7 @@ Download a preview from this fork's [releases](https://github.com/oneworkspacest
 
 FileBrowser can use its normal authentication independently of MyAccounts. To connect shared sign-in, follow [MYACCOUNTS.md](MYACCOUNTS.md). Keep the OIDC client secret in a protected launcher environment.
 
-**Release coverage:** [v0.5.0 preview 4](https://github.com/oneworkspacestudio/drive/releases/tag/drive-v0.5.0-preview.4) includes the new navigation and dropdown, Office/version history, Photos and Image Studio. Photos starts in a writable library and shows overall batch progress with upload recovery controls. Check the release notes for package contents and current limits.
+**Release coverage:** [v0.5.0 preview 5](https://github.com/oneworkspacestudio/drive/releases/tag/drive-v0.5.0-preview.5) opens new Office documents from Drive in a separate browser tab. It also includes the new navigation and dropdown, Office/version history, Photos and Image Studio. Photos starts in a writable library and shows overall batch progress with upload recovery controls. Check the release notes for package contents and current limits.
 
 ## Office and Photos previews
 
