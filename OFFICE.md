@@ -4,7 +4,7 @@ Open DOCX, XLSX, PPTX, or supported PDF files from FileBrowser. Changes are expo
 
 Existing user preferences are preserved. If a user's disabled Office extensions include `.pdf`, remove that extension in the file-viewer preferences to enable browser PDF editing.
 
-To create a document, choose **New → New file → DOCX, XLSX, PPTX, or PDF**, enter a filename, and save. Subsequent edits save automatically. PDF support includes the editor's supported annotations and forms; it does not guarantee editing arbitrary PDF page text. Files retain their ordinary formats in the configured Windows folders. FileBrowser's user/settings database does not contain document contents.
+To create a document in Drive, choose **New → Word document, Excel spreadsheet, PowerPoint presentation, or PDF document**. The editor opens in a new browser tab and saves into the selected Drive folder. Enter a filename and save; subsequent edits save automatically. Your Drive tab stays open. Closing the editor returns that tab to the destination folder. Public-share creation retains its existing embedded editor. PDF support includes the editor's supported annotations and forms; it does not guarantee editing arbitrary PDF page text. Files retain their ordinary formats in the configured Windows folders. FileBrowser's user/settings database does not contain document contents.
 
 ## Live editing across devices
 

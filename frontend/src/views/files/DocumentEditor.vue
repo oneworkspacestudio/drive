@@ -1,5 +1,5 @@
 <template>
-  <section class="document-editor" :class="{ 'document-editor--prompt': isPrompt }">
+  <section class="document-editor" :class="{ 'document-editor--prompt': isPrompt, 'document-editor--standalone': standalone }">
     <div class="document-editor__toolbar">
       <img :src="officeLogo" alt="My Office" width="32" height="32" style="flex:none" />
       <input
@@ -80,6 +80,7 @@ export default {
     newType: { type: String, default: "" },
     source: { type: String, default: "" },
     parentPath: { type: String, default: "" },
+    standalone: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -427,6 +428,11 @@ export default {
         mutations.closeTopPrompt(this.promptId);
         return;
       }
+      if (this.standalone) {
+        const folder = url.encodePath(url.joinPath(this.saveSource, this.parentPath || "/"));
+        void router.push({ path: `/files/${folder.replace(/^\/+/, "")}/`, hash: this.createdInStorage ? `#${this.newFileName}` : "" });
+        return;
+      }
       const filename = this.file.name || "";
       const listingPath = `${removeLastDir(state.route.path)}/`;
       void router.push({ path: listingPath, hash: filename ? `#${filename}` : "" });
@@ -447,6 +453,11 @@ export default {
 
 .document-editor--prompt {
   height: 100%;
+  min-height: 0;
+}
+
+.document-editor.document-editor--standalone {
+  height: 100dvh;
   min-height: 0;
 }
 

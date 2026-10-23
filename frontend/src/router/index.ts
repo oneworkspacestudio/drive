@@ -18,6 +18,7 @@ const translate = (key: string): string => i18n.global.t(key) as string;
 const t = i18n.global.t.bind(i18n.global);
 
 const titles: Record<string, string> = {
+  NewOfficeDocument: "New document",
   Photos: "Photos",
   Login: translate("general.login"),
   Share: translate("general.share"),
@@ -39,6 +40,17 @@ const titles: Record<string, string> = {
 };
 
 const routes: RouteRecordRaw[] = [
+  {
+    path: "/office/new/:type(docx|xlsx|pptx|pdf)",
+    name: "NewOfficeDocument",
+    component: () => import("@/views/NewOfficeDocument.vue"),
+    meta: { requiresAuth: true },
+    props: (route) => ({
+      newType: String(route.params.type),
+      source: typeof route.query.source === "string" ? route.query.source : "",
+      parentPath: typeof route.query.parent === "string" ? route.query.parent : "/",
+    }),
+  },
     {path:'/studio',component:Layout,meta:{requiresAuth:true},children:[{path:'',name:'Studio',component:()=>import('@/views/Studio.vue')}]},
   {path:"/photos",component:Layout,meta:{requiresAuth:true},children:[{path:"",name:"Photos",component:()=>import("@/views/Photos.vue")}]},
   {

@@ -962,6 +962,17 @@ export default {
         path: current.type === "directory" ? current.path : url.getParentDir(current.path || "/"),
         source: selected?.source || current.source || state.sources?.current || "",
       };
+      if (!getters.isShare()) {
+        const destination = this.$router.resolve({
+          name: "NewOfficeDocument",
+          params: { type },
+          query: { source: base.source, parent: base.path || "/" },
+        });
+        // Open synchronously during the click so browser popup protection does
+        // not mistake the new document tab for an unsolicited window.
+        window.open(destination.href, "_blank", "noopener");
+        return;
+      }
       mutations.showPrompt({
         name: "OfficeEditor",
         props: {
