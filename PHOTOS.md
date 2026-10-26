@@ -14,13 +14,13 @@ Build/install the updated FileBrowser frontend/backend, then choose **Photos** i
 .\Photos.exe --server http://127.0.0.1:8810
 ```
 
-The companion opens `http://127.0.0.1:8860/photos`. By default it targets FileBrowser on port 8080. An optional `Photos.json` beside the executable supplies defaults for double-click launch:
+The companion opens `http://127.0.0.1:8860/photos`. By default it targets FileBrowser on port 8080. An optional `Photos.json` in its data folder supplies defaults for double-click launch. Workspace supplies `Private/photos`; standalone Windows launches use `%APPDATA%/One Workspace/Photos`. Existing portable JSON beside the executable is still read as a standalone fallback:
 
 ```json
 {"server":"http://127.0.0.1:8810","listen":"127.0.0.1:8860"}
 ```
 
-CLI options override the file. `--listen 127.0.0.1:8861` selects another local port, and `--no-browser` keeps the browser closed on startup. The listener is restricted to loopback. FileBrowser must stay running. The companion creates no document database and stores no account passwords; FileBrowser owns the authenticated session. `Photos.log` beside the executable records startup errors.
+CLI options override the file. `--listen 127.0.0.1:8861` selects another local port, and `--no-browser` keeps the browser closed on startup. The listener is restricted to loopback. FileBrowser must stay running. The companion creates no document database and stores no account passwords; FileBrowser owns the authenticated session. `Photos.log` in the data folder records startup errors. Mutable state is refused inside the program folder.
 
 Password sign-in works through the authenticated upstream APIs. For MyAccounts, passkeys or two-step sign-in, use **FileBrowser sign-in / MyAccounts**, complete sign-in in that tab, return to Photos and choose **I'm signed in**. This shares an existing session only when the companion and the FileBrowser callback use the same hostname (for example both `127.0.0.1`). For an SSO-only remote server on a different hostname, use its integrated `/photos` section. No MyAccounts clients or callback registrations are changed by Photos.
 
