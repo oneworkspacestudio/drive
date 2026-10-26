@@ -27,16 +27,20 @@ var version = "development"
 
 func main() {
 	exe, _ := os.Executable()
-	logFile, logErr := os.OpenFile(filepath.Join(filepath.Dir(exe), "Photos.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
-	if logErr == nil {
-		defer logFile.Close()
-		log.SetOutput(logFile)
+	stateDir, stateErr := photosStateDirectory(exe)
+	if stateErr != nil {
+		log.Fatal(stateErr)
 	}
 	defaults := struct {
 		Server string `json:"server"`
 		Listen string `json:"listen"`
 	}{"http://127.0.0.1:8080", "127.0.0.1:8860"}
-	if data, e := os.ReadFile(filepath.Join(filepath.Dir(exe), "Photos.json")); e == nil {
+	settingsPath := filepath.Join(stateDir, "Photos.json")
+	if _, e := os.Stat(settingsPath); os.IsNotExist(e) && os.Getenv("WORKSPACE_APP_DATA_DIR") == "" {
+		// Read an old portable configuration without writing beside the executable.
+		settingsPath = filepath.Join(filepath.Dir(exe), "Photos.json")
+	}
+	if data, e := os.ReadFile(settingsPath); e == nil {
 		if e = json.Unmarshal([]byte(strings.TrimPrefix(string(data), "\ufeff")), &defaults); e != nil {
 			log.Fatal("Invalid Photos.json: ", e)
 		}
@@ -49,6 +53,12 @@ func main() {
 	if *showVersion {
 		fmt.Println("Photos", version)
 		return
+	}
+	if e := os.MkdirAll(stateDir, 0700); e == nil {
+		if logFile, e := os.OpenFile(filepath.Join(stateDir, "Photos.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600); e == nil {
+			defer logFile.Close()
+			log.SetOutput(logFile)
+		}
 	}
 	target, err := url.Parse(*serverURL)
 	if err != nil || target.Host == "" || (target.Scheme != "http" && target.Scheme != "https") || target.User != nil || target.RawQuery != "" || target.Fragment != "" {
@@ -150,4 +160,27 @@ func main() {
 	if err = srv.Serve(listener); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
+}
+
+func photosStateDirectory(executable string) (string, error) {
+	root := os.Getenv("WORKSPACE_APP_DATA_DIR")
+	if root == "" {
+		config, err := os.UserConfigDir()
+		if err != nil {
+			return "", fmt.Errorf("locate Photos data folder: %w", err)
+		}
+		root = filepath.Join(config, "One Workspace", "Photos")
+	}
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	programDir, err := filepath.Abs(filepath.Dir(executable))
+	if err != nil {
+		return "", err
+	}
+	if rel, err := filepath.Rel(programDir, root); err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+		return "", fmt.Errorf("Photos data must be outside its program folder")
+	}
+	return root, nil
 }
